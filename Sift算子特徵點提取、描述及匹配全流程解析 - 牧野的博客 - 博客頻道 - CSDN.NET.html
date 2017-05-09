@@ -1,0 +1,1417 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0051)http://blog.csdn.net/dcrmg/article/details/52577555 -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">  
+
+    <script src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/push.js"></script><script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/tracking.js" charset="utf-8"></script>  
+
+    <script type="text/javascript">
+        var protocol = window.location.protocol;
+        document.write('<script type="text/javascript" src="' + protocol + '//csdnimg.cn/pubfooter/js/repoAddr2.js?v=' + Math.random() + '"></' + 'script>');
+    </script><script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/repoAddr2.js"></script>
+
+  
+ <meta http-equiv="Cache-Control" content="no-siteapp"><link rel="alternate" media="handheld" href="http://blog.csdn.net/dcrmg/article/details/52577555#">
+
+    <title>Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET</title>
+    
+    <meta name="description" content="Sift之前的江湖在Sift横空出世之前，特征点检测与匹配江湖上占据霸主地位的是角点检测家族。先来探究一下角点家族不为人知的恩怨情仇。角点家族的族长是Moravec在1977年提出的Moravec角点检测算子，它是一种基于灰度方差的角点检测方法，该算子计算图像中某个像素点沿水平、垂直方向上的灰度差异，以确定角点位置，Moravec是第一个角点检测算法，也是角点家族的开山鼻祖。角点家族的">
+    <script src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/jquery.js" type="text/javascript"></script>
+      <script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/jquery-version.js"></script>
+    <script type="text/javascript" src="http://static.blog.csdn.net/scripts/ad.js?v=1.1"></script>
+        <!--new top-->
+       
+        <link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/index.css">
+        <!--new top-->
+    
+      <!-- ad begin -->
+         <script language="javascript" type="text/javascript" src="http://ads.csdn.net/js/tracking.js"></script>
+    <!-- ad end-->
+
+    <link rel="Stylesheet" type="text/css" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/style.css">
+    <link id="RSSLink" title="RSS" type="application/rss+xml" rel="alternate" href="http://blog.csdn.net/dcrmg/rss/list">
+    <link rel="shortcut icon" href="http://c.csdnimg.cn/public/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/blue.css">
+ 
+
+
+<script>
+        (function () {
+            var bp = document.createElement('script');
+            var curProtocol = window.location.protocol.split(':')[0];
+            if (curProtocol === 'https') {
+                bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+            }
+            else {
+                bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+            }
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(bp, s);
+        })();
+</script>
+
+
+<style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Hover_Arrow {position: absolute; width: 15px; height: 11px; cursor: pointer}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 5px 0px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 5px; -webkit-border-radius: 5px; -moz-border-radius: 5px; -khtml-border-radius: 5px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 1px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; color: #666666}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: .7em}
+.MathJax_MenuRadioCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuLabel {padding: 1px 2em 3px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #DDDDDD; margin: 4px 3px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: #606872; color: white}
+.MathJax_Menu_Close {position: absolute; width: 31px; height: 31px; top: -15px; left: -15px}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><script src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/share.js"></script><link rel="stylesheet" type="text/css" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/job_reco.css"><script src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/wxLogin.js"></script><link rel="stylesheet" type="text/css" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/style(1).css"><link type="text/css" rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/style(2).css"><link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/share_style0_16.css"><script src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/logger.js"></script><link href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/bdsstyle.css" rel="stylesheet" type="text/css"></head>
+<body><iframe frameborder="0" style="display: none;" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/saved_resource.html"></iframe><div id="MathJax_Message" style="display: none;"></div>
+
+
+    <!-- 广告位开始 -->
+        <ins data-revive-zoneid="149" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57"></ins>
+    <!-- 广告位结束 -->
+
+    
+   
+      <!--new top-->
+    <script id="toolbar-tpl-scriptId" fixed="true" prod="blog" skin="black" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/html.js" type="text/javascript"></script><div class="csdn-toolbar csdn-toolbar-skin-black ">        <div class="container row center-block ">          <div class="col-md-3 pull-left logo clearfix"><a href="http://www.csdn.net/?ref=toolbar" title="CSDN首頁" target="_blank" class="icon"></a><a title="頻道首頁" href="http://blog.csdn.net/?ref=toolbar_logo" class="img blog-icon"></a></div>          <div class="pull-right login-wrap unlogin">            <ul class="btns">              <li class="loginlink"><a href="https://passport.csdn.net/account/login?ref=toolbar" target="_top">登錄&nbsp;</a>|<a target="_top" href="http://passport.csdn.net/account/mobileregister?ref=toolbar&amp;action=mobileRegister">&nbsp;註冊</a></li>              <li class="search">                <div class="icon on-search-icon">                  <div class="wrap">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <form action="http://so.csdn.net/search" method="get" target="_blank">                      <input type="hidden" value="toolbar" name="ref" accesskey="2">                      <div class="border">                        <input placeholder="搜索" type="text" value="" name="q" accesskey="2"><span class="icon-enter-sm"></span>                      </div>                    </form>                  </div>                </div>              </li>              <li class="favor">                <div class="icon on-favor-icon">                  <div class="wrap">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <div style="display:none;" class="favor-success"><span class="msg">收藏成功</span>                      <div class="btns"><span class="btn btn-primary ok">確定</span></div>                    </div>                    <div style="display:none;" class="favor-failed"><span class="icon-danger-lg"></span><span class="msg">收藏失敗，請重新收藏</span>                      <div class="btns"><span class="btn btn-primary ok">確定</span></div>                    </div>                    <form role="form" class="form-horizontal favor-form">                      <div class="form-group">                        <div class="clearfix">                          <label for="input-title" class="col-sm-2 control-label"><span class="red_txt">*</span>標題</label>                          <div class="col-sm-10">                            <input id="inputTitle" type="text" placeholder="" class="title form-control">                          </div>                        </div>                        <div class="alert alert-danger"><strong></strong>標題不能為空</div>                      </div>                      <div class="form-group" style="display:none;">                        <label for="input-url" class="col-sm-2 control-label">網址</label>                        <div class="col-sm-10">                          <input id="input-url" type="text" placeholder="" class="url form-control">                        </div>                      </div>                      <div class="form-group">                        <label for="input-tag" class="col-sm-2 tag control-label">標籤</label>                        <div class="col-sm-10">                          <input id="input-tag" type="text" class="form-control tag">                        </div>                      </div>                      <div class="form-group">                        <label for="input-description" class="description col-sm-2 control-label">位置</label>                        <div class="col-sm-10">                          <div class="my_lib_box">                            個人主頁&nbsp;-&nbsp;<a href="http://my.csdn.net/" target="_blank">我的知識</a>                          </div>                          <div class="checkbox">                            <div class="pull-left">                              <label>                                <input type="checkbox" name="share" class="save_lib_map" checked="checked" value="on">同時保存至：                              </label>                            </div>                            <div class="pull-left">                              <div class="dropdown">                                <button id="toolbar_sele_map" type="button">                                  選擇知識圖譜                                  <i class="fa fa-chevron-down"></i>                                </button>                                <div class="top_arr"></div>                                <div class="outside">                                  <ul class="dropdown-menu" id="toolbar_Design_knowledge"><li>選擇知識圖譜</li></ul>                                </div>                              </div>                            </div>                            <div class="pull-left new_txt">                              <a href="http://lib.csdn.net/my/create/structure" target="_blank">新建？</a>                            </div>                          </div>                        </div>                      </div>                      <div class="form-group">                        <div class="col-sm-offset-2 col-sm-10 ft">                          <div class="col-sm-4 pull-left" style="display:none">                            <div class="checkbox">                              <label>                                <input type="checkbox" name="share" checked="checked" class="share" value="on">公開                              </label>                            </div>                          </div>                          <div class="col-sm-8 pull-right favor-btns">                            <button type="button" class="cancel btn btn-default">取消</button>                            <button type="submit" class="submit btn btn-primary">收藏</button>                          </div>                        </div>                      </div>                    </form>                  </div>                </div>              </li>              <li class="notify">                <div style="display:none" class="number"></div>                <div style="display:none" class="icon-hasnotes-sm"></div>                <div id="header_notice_num"></div>                <div class="icon on-notify-icon">                  <div class="wrap">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <div id="note1" class="csdn_note">                      <div class="box"></div>                    <iframe src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/saved_resource(1).html" frameborder="0" allowtransparency="true" style="z-index:-1;position:absolute;top:0;left:0;width:100%;height:100%;background:transparent"></iframe></div>                  </div>                </div>              </li>              <li class="ugc">                <div class="icon on-ugc-icon">                  <div class="wrap clearfix">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <dl>                      <dt><a href="http://geek.csdn.net/news/expert?ref=toolbar" target="_blank" class="p-news clearfix" style="display:none;"><em class="icon"></em><span>分享資訊</span></a></dt>                      <dt style="border: none;"><a href="http://u.download.csdn.net/upload?ref=toolbar" target="_blank" class="p-doc clearfix"><em class="icon"></em><span>傳PPT/文檔</span></a></dt>                      <dt><a href="http://bbs.csdn.net/topics/new?ref=toolbar" target="_blank" class="p-ask clearfix"><em class="icon"></em><span>提問題</span></a></dt>                      <dt><a href="http://write.blog.csdn.net/postedit?ref=toolbar" target="_blank" class="p-blog clearfix"><em class="icon"></em><span>寫博客</span></a></dt>                      <dt><a href="http://u.download.csdn.net/upload?ref=toolbar" target="_blank" class="p-src clearfix"><em class="icon"></em><span>傳資源</span></a></dt>                      <dt><a href="https://code.csdn.net/projects/new?ref=toolbar" target="_blank" class="c-obj clearfix"><em class="icon"></em><span>創建項目</span></a></dt>                      <dt><a href="https://code.csdn.net/snippets/new?ref=toolbar" target="_blank" class="c-code clearfix"><em class="icon"></em><span>創建代碼片</span></a></dt>                    </dl>                  </div>                </div>              </li>              <li class="profile">                <div class="icon on-profile-icon"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/100x100.jpg" class="curr-icon-img">                  <div class="wrap clearfix">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <div class="bd">                      <dl class="clearfix">                        <dt class="pull-left img"><a target="_blank" href="http://my.csdn.net/?ref=toolbar" class="avatar"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/100x100.jpg"></a></dt>                        <dd class="info" style="border: none;"><a target="_blank" href="http://my.csdn.net/?ref=toolbar" class="nickname"></a><a class="set-nick" href="https://passport.csdn.net/account/profile">設置暱稱<span class="write-icon"></span></a><span class="dec"><a class="fill-dec" href="http://my.csdn.net/" target="_blank">編輯自我介紹，讓更多人瞭解你<span class="write-icon"></span></a></span></dd>                      </dl>                    </div>                    <div class="ft clearfix"><a target="_blank" href="http://my.csdn.net/my/account/changepwd?ref=toolbar" class="pull-left"><span class="icon-cog"></span>帳號設置</a><a href="https://passport.csdn.net/account/logout?ref=toolbar" target="_top" class="pull-left" style="margin-left:132px; width:18px; height:27px; white-space:nowrap; overflow:hidden;"><span class="icon-signout"></span><span class="out">退出</span></a></div>                  </div>                </div>              </li>              <li class="apps">                <div id="chasnew123" class="hasnew" style="display: none;"></div>                <div id="cappsarea123" class="icon on-apps-icon">                  <div class="wrap clearfix">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                  <div class="detail">                    <dl>                      <dt>                        <h5>社區</h5>                      </dt>                      <dd> <a href="http://blog.csdn.net/?ref=toolbar" target="_blank">博客</a></dd>                      <dd> <a href="http://bbs.csdn.net/?ref=toolbar" target="_blank">論壇</a></dd>                      <dd> <a href="http://download.csdn.net/?ref=toolbar" target="_blank">下載</a></dd>                      <dd> <a href="http://lib.csdn.net/?ref=toolbar" target="_blank">知識庫</a></dd>                      <dd><a href="http://ask.csdn.net/?ref=toolbar" target="_blank">技術問答</a></dd>                      <dd><a href="http://geek.csdn.net/?ref=toolbar" target="_blank">極客頭條</a></dd>                      <dd style="display:none"> <a href="http://hero.csdn.net/?ref=toolbar" target="_blank">英雄會</a></dd>                    </dl>                  </div>                  <div class="detail">                    <dl>                      <dt>                        <h5>服務</h5>                      </dt>                      <dd style="display:none"> <a href="http://job.csdn.net/?ref=toolbar" target="_blank">JOB<img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/new.gif" style="display: none; margin-top: -26px; width: 23px;"></a></dd>                      <dd> <a href="http://edu.csdn.net/?ref=toolbar" target="_blank">學院<img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/new.gif" style="display: none; margin-top: -26px; width: 23px;"></a></dd>                      <dd> <a href="https://code.csdn.net/?ref=toolbar" target="_blank">CODE</a></dd>                      <dd> <a href="http://huiyi.csdn.net/?ref=toolbar" target="_blank">活動</a></dd>                      <dd> <a href="http://www.csto.com/?ref=toolbar" target="_blank">CSTO</a></dd>                      <dd> <a href="http://mall.csdn.net/?ref=toolbar" target="_blank">C幣兌換<img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/new.gif" style="display: none; margin-top: -26px; width: 23px;"></a></dd>                    </dl>                  </div>                  <div class="detail last">                    <dl>                      <dt>                        <h5>俱樂部</h5>                      </dt>                      <dd> <a href="http://cto.csdn.net/?ref=toolbar" target="_blank">CTO俱樂部</a></dd>                      <dd> <a href="http://student.csdn.net/?ref=toolbar" target="_blank">高校俱樂部</a></dd>                    </dl>                  </div>                </div>              </div>            </li>            </ul>          </div>        </div>    </div>
+     <!--new top-->
+    <div id="container">
+        <div id="header">
+    <div class="header">
+        <div id="blog_title">
+            <h2>
+                <a href="http://blog.csdn.net/dcrmg">牧野的博客</a></h2>
+            <h3></h3>
+            <div class="clear">
+            </div>
+        </div>
+        <div class="clear">
+        </div>
+        
+     
+    </div>
+</div>
+<div id="navigator">
+    <div class="navigator_bg">
+    </div>
+    <div class="navigator">
+        <ul>           
+                <li id="btnContents"><a href="http://blog.csdn.net/dcrmg?viewmode=contents"><span onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_mulu&#39;])">
+                    <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/ico_list.gif">目錄視圖</span></a></li>
+                <li id="btnView"><a href="http://blog.csdn.net/dcrmg?viewmode=list"><span onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_zhaiyao&#39;])">
+                    <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/ico_summary.gif">摘要視圖</span></a></li>
+                <li id="btnRss"><a href="http://blog.csdn.net/dcrmg/rss/list"><span onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_RSS&#39;])">
+                    <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/ico_rss.gif">訂閱</span></a></li>                
+            
+
+            </ul>
+    </div>
+</div>
+<script type="text/javascript">
+    var username = "dcrmg";
+    var _blogger = username;
+    var blog_address = "http://blog.csdn.net/dcrmg";
+    var static_host = "http://static.blog.csdn.net";
+    var currentUserName = "";  
+</script>
+
+        <div id="body">
+            <div id="main">
+                <div class="main">
+                        <div class="ad_class">
+<div class="notice tracking-ad" data-mod="popu_3"> 
+
+
+<a href="http://bss.csdn.net/m/topic/qualcomm_vote">
+<font color="blue"><strong>【有獎投票】玩轉Dragonboard 410c 的正確姿勢</strong></font></a>
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+<a href="http://blog.csdn.net/blogdevteam/article/details/69452741">
+<font color="red">CSDN日報20170406 ——《代碼很爛，所以離職。》
+</font></a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+<a href="http://edu.csdn.net/huiyiCourse/series_detail/27?ref=blog&amp;loc=r1">
+<font color="blue">Python數據分析與機器學習
+</font></a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+<a href="http://blog.csdn.net/blogdevteam/article/details/60961185">
+<font color="red"><strong>博客搬家，有禮相送</strong>
+</font></a>
+</div>                        </div>
+                        
+
+
+
+  
+<link href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/comment1.css" type="text/css" rel="stylesheet">
+<link href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/style1.css" type="text/css" rel="stylesheet">
+<script language="JavaScript" type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/jquery.cookie.js"></script>
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/main.js"></script>
+<link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/markdown_views.css">
+<link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/category.css">
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/MathJax.js"></script>
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/web-storage-cache.min.js"></script>
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/replace.min.js"></script>
+
+<link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/prettify.css">
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/prettify.js"></script>
+
+
+  <script type="text/ecmascript">
+      window.quickReplyflag = true;
+           
+            var isBole = false;
+            
+      
+      var fasrc="http://my.csdn.net/my/favorite/miniadd?t=Sift%e7%ae%97%e5%ad%90%e7%89%b9%e5%be%81%e7%82%b9%e6%8f%90%e5%8f%96%e3%80%81%e6%8f%8f%e8%bf%b0%e5%8f%8a%e5%8c%b9%e9%85%8d%e5%85%a8%e6%b5%81%e7%a8%8b%e8%a7%a3%e6%9e%90&u=http://blog.csdn.net/dcrmg/article/details/52577555"
+
+    </script>
+<div id="article_details" class="details">
+    <div class="article_title">   
+         <span class="ico ico_type_Original"></span>
+
+
+    <h1>
+        <span class="link_title"><a href="http://blog.csdn.net/dcrmg/article/details/52577555">
+        Sift算子特徵點提取、描述及匹配全流程解析            
+        </a></span>
+    </h1>
+</div>
+
+   
+
+        <div class="article_manage clearfix">
+        <div class="article_l">
+            <span class="link_categories">
+            標籤：
+              <a href="http://www.csdn.net/tag/Sift%e7%ae%97%e5%ad%90" target="_blank" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_tag&#39;]);">Sift算子</a><a href="http://www.csdn.net/tag/Sift%e7%89%b9%e5%be%81%e6%8f%90%e5%8f%96" target="_blank" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_tag&#39;]);">Sift特徵提取</a><a href="http://www.csdn.net/tag/%e7%89%b9%e5%be%81%e5%8c%b9%e9%85%8d" target="_blank" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_tag&#39;]);">特徵匹配</a>
+            </span>
+        </div>
+        <div class="article_r">
+            <span class="link_postdate">2016-09-18 20:29</span>
+            <span class="link_view" title="閱讀次數">2027人閱讀</span>
+            <span class="link_comments" title="評論次數"> <a href="http://blog.csdn.net/dcrmg/article/details/52577555#comments" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_pinglun&#39;])">評論</a>(1)</span>
+            <span class="link_collect tracking-ad" data-mod="popu_171"> <a href="javascript:void(0);" onclick="javascript:collectArticle(&#39;Sift%e7%ae%97%e5%ad%90%e7%89%b9%e5%be%81%e7%82%b9%e6%8f%90%e5%8f%96%e3%80%81%e6%8f%8f%e8%bf%b0%e5%8f%8a%e5%8c%b9%e9%85%8d%e5%85%a8%e6%b5%81%e7%a8%8b%e8%a7%a3%e6%9e%90&#39;,&#39;52577555&#39;);return false;" title="收藏">收藏</a></span>
+             <span class="link_report"> <a href="http://blog.csdn.net/dcrmg/article/details/52577555#report" onclick="javascript:report(52577555,2);return false;" title="舉報">舉報</a></span>
+
+        </div>
+    </div>
+    <div class="embody" style="display:none" id="embody">
+        <span class="embody_t">本文章已收錄於：</span>
+        <div class="embody_c" id="lib" value="{&quot;err&quot;:0,&quot;msg&quot;:&quot;ok&quot;,&quot;data&quot;:[]}"></div>
+    </div>
+    <style type="text/css">        
+            .embody{
+                padding:10px 10px 10px;
+                margin:0 -20px;
+                border-bottom:solid 1px #ededed;                
+            }
+            .embody_b{
+                margin:0 ;
+                padding:10px 0;
+            }
+            .embody .embody_t,.embody .embody_c{
+                display: inline-block;
+                margin-right:10px;
+            }
+            .embody_t{
+                font-size: 12px;
+                color:#999;
+            }
+            .embody_c{
+                font-size: 12px;
+            }
+            .embody_c img,.embody_c em{
+                display: inline-block;
+                vertical-align: middle;               
+            }
+             .embody_c img{               
+                width:30px;
+                height:30px;
+            }
+            .embody_c em{
+                margin: 0 20px 0 10px;
+                color:#333;
+                font-style: normal;
+            }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            try
+            {
+                var lib = eval("("+$("#lib").attr("value")+")");
+                var html = "";
+                if (lib.err == 0) {
+                    $.each(lib.data, function (i) {
+                        var obj = lib.data[i];
+                        //html += '<img src="' + obj.logo + '"/>' + obj.name + "&nbsp;&nbsp;";
+                        html += ' <a href="' + obj.url + '" target="_blank">';
+                        html += ' <img src="' + obj.logo + '">';
+                        html += ' <em><b>' + obj.name + '</b></em>';
+                        html += ' </a>';
+                    });
+                    if (html != "") {
+                        setTimeout(function () {
+                            $("#lib").html(html);                      
+                            $("#embody").show();
+                        }, 100);
+                    }
+                }      
+            } catch (err)
+            { }
+            
+        });
+    </script>
+      <div class="category clearfix">
+        <div class="category_l">
+           <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/category_icon.jpg">
+            <span>分類：</span>
+        </div>
+        <div class="category_r">
+                    <label onclick="GetCategoryArticles(&#39;6365099&#39;,&#39;dcrmg&#39;,&#39;top&#39;,&#39;52577555&#39;);">
+                        <span onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_fenlei&#39;]);">圖像處理<em>（21）</em></span>
+                      <img class="arrow-down" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/arrow_triangle _down.jpg" style="display:inline;">
+                      <img class="arrow-up" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/arrow_triangle_up.jpg" style="display:none;">
+                        <div class="subItem">
+                            <div class="subItem_t"><a href="http://blog.csdn.net/dcrmg/article/category/6365099" target="_blank">作者同類文章</a><i class="J_close">X</i></div>
+                            <ul class="subItem_l" id="top_6365099">                            
+                            </ul>
+                        </div>
+                    </label>                    
+        </div>
+    </div>
+    <script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/category.js"></script>  
+        <div class="bog_copyright">         
+            <p class="copyright_p">版權聲明：本文為博主原創文章，轉載請註明出處。</p>
+        </div>
+
+  
+
+  
+  
+     
+
+<div style="clear:both"></div><div style="border:solid 1px #ccc; background:#eee; float:left; min-width:200px;padding:4px 10px;"><p style="text-align:right;margin:0;"><span style="float:left;">目錄<a href="http://blog.csdn.net/dcrmg/article/details/52577555#" title="系統根據文章中H1到H6標籤自動生成文章目錄">(?)</a></span><a href="http://blog.csdn.net/dcrmg/article/details/52577555#" onclick="javascript:return openct(this);" title="展開">[+]</a></p><ol style="display:none;margin-left:14px;padding-left:14px;line-height:160%;"><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t0">
+</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t1">Sift之前的江湖</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t2">Sift閃亮登場</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t3">Sfit特徵提取和匹配具體步驟</a></li><ol><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t4">生成高斯差分金字塔DOG金字塔尺度空間構建</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t5">空間極值點檢測關鍵點的初步查探</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t6">穩定關鍵點的精確定位</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t7">穩定關鍵點方向信息分配</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t8">關鍵點描述</a></li><li><a href="http://blog.csdn.net/dcrmg/article/details/52577555#t9">
+6 特徵點匹配</a></li></ol></ol></div><div style="clear:both"></div><div id="article_content" class="article_content">
+
+<h2><a name="t0"></a><strong><span style="font-size:24px"><br>
+</span></strong></h2>
+<h2><a name="t1"></a><strong><span style="font-size:24px">Sift之前的江湖</span></strong></h2>
+<p><span style="font-size:18px">在Sift橫空出世之前，特徵點檢測與匹配江湖上佔據霸主地位的是角點檢測家族。先來探究一下角點家族不為人知的恩怨情仇。</span></p>
+<p><span style="font-size:18px">角點家族的族長是Moravec在1977年提出的Moravec角點檢測算子，它是一種基於灰度方差的角點檢測方法，該算子計算圖像中某個像素點沿水平、垂直方向上的灰度差異，以確定角點位置，Moravec是第一個角點檢測<a href="http://lib.csdn.net/base/datastructure" class="replace_word" title="算法與數據結構知識庫" target="_blank" style="color:#df3434; font-weight:bold;">算法</a>，也是角點家族的開山鼻祖。</span></p>
+<p><span style="font-size:18px">角點家族的九袋長老是Chris Harris &amp; Mike Stephens在1988年提出的Harris角點檢測算子。Harris不止是考察水平、垂直4個方向上的灰度差異，而是考察了所有方向上的灰度差異，並且具有旋轉不變性和對部分仿射變換的穩定性。Harris是整個角點檢測家族的顏值擔當。</span></p>
+<p><span style="font-size:18px">角點家族的大護法是J.Shi和C.Tomasi在1994年提出的Shi-Tomasi角點檢測算子，它是對Harris角點算子的改進，並且有一個直接「叫囂」Harris算子的名字——「Good Features to Track</span><span style="font-size:18px">」，在<a href="http://lib.csdn.net/base/opencv" class="replace_word" title="OpenCV知識庫" target="_blank" style="color:#df3434; font-weight:bold;">OpenCV</a>中實現函數是goodfeaturesToTrack。它通過考察自相關矩陣M的兩個特徵值中的較小者來確定就角點，大部分情況下，有比Harris更好的檢測效果。</span></p>
+<p><span style="font-size:18px">角點家族洪興堂堂主是E.Rosten和T.Drummond在2006年提出的FAST(Feature from Accelerated Segment Test)算子。它通過考察像素點與其鄰域內16個像素點的差異來確定特徵點（角點），並且通過分割<a href="http://lib.csdn.net/base/softwaretest" class="replace_word" title="軟件測試知識庫" target="_blank" style="color:#df3434; font-weight:bold;">測試</a>算法對檢測效率做了極大的提升。它信奉「天下武功，唯快不破」的真理，在快的道路上銳意進取，基本可以滿足實時檢測系統的要求，在現今<a href="http://lib.csdn.net/base/computervison" class="replace_word" title="計算機視覺知識庫" target="_blank" style="color:#df3434; font-weight:bold;">計算機視覺</a>領域賺足了眼球。</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">角點家族這種群雄逐鹿的局面一直持續了很多年，大家你追我趕，在群主Moravec的帶領下家族基於日漸殷實。直到20多年後的1999年的某天拂曉，一個叫Sift的後生叩響了角點家族的鎏金鐵門。</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<h2><a name="t2"></a><strong><span style="font-size:24px">Sift閃亮登場</span></strong></h2>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">1999年，大不列顛哥倫比亞大學的David G.Lowe教授在現有基於不變量技術的特徵檢測方法基礎上，提出了一種基於尺度空間的，對圖像縮放、旋轉、甚至仿射變換保持不變性的圖像局部特徵描述算子——Sift（尺度不變特徵變換），全稱是Scale Invariant Feature Transform，並且在2004年，又對Sift算法做了更為系統的完善。下邊這位老爺子就是Lowe。</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918204947251" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">Sift提取圖像的局部特徵，在尺度空間尋找極值點，並提取出其位置、尺度、方向信息。Sfit的應用範圍包括物體辨別、<a href="http://lib.csdn.net/base/robot" class="replace_word" title="機器人知識庫" target="_blank" style="color:#df3434; font-weight:bold;">機器人</a>地圖感知與導航、影響拼接、3D模型建立、手勢識別、影響追蹤等。</span></p>
+<p><span style="font-size:18px">Sift特徵的特點：</span></p>
+<p><span style="font-size:18px">1. 對旋轉、尺度縮放、亮度變化保持不變性，對視角變化、噪聲等也存在一定程度的穩定性；</span></p>
+<p><span style="font-size:18px">2. 獨特性，信息量豐富，適用於在海量特徵數據中進行快速，準確的匹配；</span></p>
+<p><span style="font-size:18px">3. 多量性，即使少數幾個物體也可以產生大量的Sfit特徵向量；</span></p>
+<p><span style="font-size:18px">4. 可擴展性，可以很方便的與其他形式的特徵向量進行聯合；</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">Sfit算法的實質是在不同的尺度空間上查找關鍵點（特徵點），計算關鍵點的大小、方向、尺度信息，利用這些信息組成關鍵點對特徵點進行描述的問題。Sift所查找的關鍵點都是一些十分突出，不會因光照，仿射便函和噪聲等因素而變換的「穩定」特徵點，如角點、邊緣點、暗區的亮點以及亮區的暗點等。匹配的過程就是對比這些特徵點的過程，這個流程可以用下圖表述：</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918205938524" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<h2><a name="t3"></a><strong><span style="font-size:24px">Sfit特徵提取和匹配具體步驟</span></strong></h2>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">1. 生成高斯差分金字塔（DOG金字塔），尺度空間構建</span></p>
+<p><span style="font-size:18px">2. 空間極值點檢測（關鍵點的初步查探）</span></p>
+<p><span style="font-size:18px">3. 穩定關鍵點的精確定位</span></p>
+<p><span style="font-size:18px">4. 穩定關鍵點方向信息分配</span></p>
+<p><span style="font-size:18px">5. 關鍵點描述</span></p>
+<p><span style="font-size:18px">6. 特徵點匹配</span></p>
+<p><span style="font-size:18px">以下對這6個步驟逐一說明。</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<h3><a name="t4"></a><span style="font-size:18px">1. <span style="font-size:18px">生成高斯差分金字塔（DOG金字塔），尺度空間構建</span></span></h3>
+<p><span style="font-size:18px"><span style="font-size:18px"><br>
+</span></span></p>
+<p><span style="font-size:18px">主要思想是通過對原始圖像進行尺度變換，獲得圖像多尺度下的尺度空間表示序列，對這些序列進行尺度空間主輪廓的提取，並以該主輪廓作為一種特徵向量，實現邊緣、角點檢測不同分辨率上的關鍵點提取等。</span></p>
+<p><span style="font-size:18px">各尺度下圖像的模糊度逐漸變大，能夠模擬人在距離目標由近到遠時目標物體在視網膜上的形成過程。</span></p>
+<p><span style="font-size:18px">尺度空間構建的基礎是DOG金字塔，DOG金字塔構建的基礎是高斯金字塔，關於尺度空間、高斯金字塔、DOG金字塔的相關說明，可以參看前一篇博文《<a target="_blank" href="http://blog.csdn.net/dcrmg/article/details/52561656">Sift中尺度空間、高斯金字塔、差分金字塔（DOG金字塔）、圖像金字塔</a>》。貼一下高斯金字塔的實例圖像：</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160917215448910" alt="">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160917215452128" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">歸一化的DOG金字塔實例圖像：</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160917232151713" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<h3><a name="t5"></a><span style="font-size:18px"><span style="font-size:18px">2. 空間極值點檢測（關鍵點的初步查探）</span></span></h3>
+<p><span style="font-size:18px"><span style="font-size:18px"><br>
+</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px">為了尋找DOG函數的極值點，每一個像素點要和它所有的相鄰點比較，看其是否比它的圖像域和尺度空間域的相鄰點大或者小，如下圖所示：</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px"><br>
+</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918211309513" alt=""><br>
+</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px"><br>
+</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px">在二維圖像空間，中心點與它3*3鄰域內的8個點做比較，在同一組內的尺度空間上，中心點和上下相鄰的兩層圖像的2*9個點作比較，如此可以保證檢測到的關鍵點在尺度空間和二維圖像空間上都是局部極值點。</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px"><br>
+</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px"></span></span></p>
+<h3><a name="t6"></a><span style="font-size:18px">3. 穩定關鍵點的精確定位</span></h3>
+<p></p>
+<p><span style="font-size:18px">DOG值對噪聲和邊緣比較敏感，所以在第2步的尺度空間中檢測到的局部極值點還要經過進一步的篩選，去除不穩定和錯誤檢測出的極值點，另一點就是在構建高斯金字塔過程中採用了下採樣的圖像，在下採樣圖像中提取的極值點對應在原始圖像中的確切位置，也是要在本步驟中解決的問題。</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<h3><a name="t7"></a><span style="font-size:18px">4. 穩定關鍵點方向信息分配</span></h3>
+<p><span style="font-size:18px">穩定的極值點是在不同尺度空間下提取的，這保證了關鍵點的尺度不變性。為關鍵點分配方向信息所要解決的問題是使得關鍵點對圖像角度和旋轉具有不變性。方向的分配是通過求每個極值點的梯度來實現的。</span></p>
+<p><span style="font-size:18px">對於任一關鍵點，其梯度幅值表述為：</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918212038619" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">梯度方向為：</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918212042391" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">分配給關鍵點的方向並不直接是關鍵點的梯度方向，而是按照一種梯度方向直方圖的方式給出的。</span></p>
+<p><span style="font-size:18px">具體的方法是：計算以關鍵點為中心的鄰域內所有點的梯度方向，當然梯度方向一定是在0~360°範圍內，對這些梯度方向歸一化到36個方向內，每個方向代表了10°的範圍。然後累計落到每個方向內的關鍵點個數，以此生成梯度方向直方圖。</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918212445002" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">將梯度方向直方圖中縱坐標最大的項代表的方向分配給當前關鍵點作為主方向，若在梯度直方圖中存在一個相當於主峰值80%能量的峰值，則將這個方向認為是關鍵點的輔方向。輔方向的設計可以增強匹配的魯棒性，Lowe指出，大概有15%的關鍵點具有輔方向，而恰恰是這15%的關鍵點對穩定匹配起到關鍵作用。</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<h3><a name="t8"></a><span style="font-size:18px">5. 關鍵點描述</span></h3>
+<div><span style="font-size:18px"><br>
+</span></div>
+<p><span style="font-size:18px">對關鍵點的描述是後續實現匹配的關鍵步驟，描述其實就是一種以數學方式定義關鍵的過程。描述子不但包含關鍵點，也包括關鍵點周圍對其有貢獻的鄰域點。</span></p>
+<p><span style="font-size:18px">描述的思路是：對關鍵點周圍像素區域分塊，計算快內梯度直方圖，生成具有獨特性的向量，這個向量是該區域圖像信息的一種抽象表述。</span></p>
+<p><span style="font-size:18px">如下圖，對於2*2塊，每塊的所有像素點的荼毒做高斯加權，每塊最終取8個方向，即可以生成2*2*8維度的向量，以這2*2*8維向量作為中心關鍵點的數學描述。</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918213353043" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px">David G.Lowed的實驗結果表明：對每個關鍵點，採用4*4*8共128維向量的描述子進項關鍵點表徵，綜合效果最佳：</span></p>
+<p><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918213601343" alt=""><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<h3><a name="t9"></a><span style="font-size:18px"><br>
+</span><span style="font-size:18px">6. 特徵點匹配</span></h3>
+<p><span style="font-size:18px"><br>
+</span></p>
+<span style="font-size:18px">特徵點的匹配是通過計算兩組特徵點的128維的關鍵點的歐式距離實現的。歐式距離越小，則相似度越高，當歐式距離小於設定的閾值時，可以判定為匹配成功。</span>
+<p><span style="font-size:18px"><span style="font-size:18px">Sift特徵匹配效果：</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px"><br>
+</span></span></p>
+<p><span style="font-size:18px"><span style="font-size:18px"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20160918221920012" alt=""><br>
+</span></span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><span style="font-size:18px"><br>
+</span></p>
+<p><br>
+</p>
+   
+</div>
+
+
+
+
+<!-- Baidu Button BEGIN -->
+
+
+
+
+<div class="bdsharebuttonbox tracking-ad bdshare-button-style0-16" style="float: right;" data-mod="popu_172" data-bd-bind="1491537245234">
+<a href="http://blog.csdn.net/dcrmg/article/details/52577555#" class="bds_more" data-cmd="more" style="background-position:0 0 !important; background-image: url(http://bdimg.share.baidu.com/static/api/img/share/icons_0_16.png?v=d754dcc0.png) !important"></a>
+<a href="http://blog.csdn.net/dcrmg/article/details/52577555#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空間" style="background-position:0 -52px !important"></a>
+<a href="http://blog.csdn.net/dcrmg/article/details/52577555#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博" style="background-position:0 -104px !important"></a>
+<a href="http://blog.csdn.net/dcrmg/article/details/52577555#" class="bds_tqq" data-cmd="tqq" title="分享到騰訊微博" style="background-position:0 -260px !important"></a>
+<a href="http://blog.csdn.net/dcrmg/article/details/52577555#" class="bds_renren" data-cmd="renren" title="分享到人人網" style="background-position:0 -208px !important"></a>
+<a href="http://blog.csdn.net/dcrmg/article/details/52577555#" class="bds_weixin" data-cmd="weixin" title="分享到微信" style="background-position:0 -1612px !important"></a>
+</div>
+<script>window._bd_share_config = { "common": { "bdSnsKey": {}, "bdText": "", "bdMini": "1", "bdMiniList": false, "bdPic": "", "bdStyle": "0", "bdSize": "16" }, "share": {} }; with (document) 0[(getElementsByTagName('head')[0] || body).appendChild(createElement('script')).src = 'http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion=' + ~(-new Date() / 36e5)];</script>
+<!-- Baidu Button END -->
+
+   <link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/blog_detail.css">
+
+    
+<!--172.16.140.11-->
+
+<!-- Baidu Button BEGIN -->
+<script type="text/javascript" id="bdshare_js" data="type=tools&amp;uid=1536434" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/bds_s_v2.js"></script>
+
+<script type="text/javascript">
+    document.getElementById("bdshell_js").src = "http://bdimg.share.baidu.com/static/js/shell_v2.js?cdnversion=" + Math.ceil(new Date()/3600000)
+</script>
+<!-- Baidu Button END -->
+
+<script type="text/javascript">
+    var fromjs = $("#fromjs");
+    if (fromjs.length > 0) {
+            $("#fromjs .markdown_views pre").addClass("prettyprint");
+            prettyPrint();
+
+            $('pre.prettyprint code').each(function () {
+                var lines = $(this).text().split('\n').length;
+                var $numbering = $('<ul/>').addClass('pre-numbering').hide();
+                $(this).addClass('has-numbering').parent().append($numbering);
+                for (i = 1; i <= lines; i++) {
+                    $numbering.append($('<li/>').text(i));
+                };
+                $numbering.fadeIn(1700);
+            });
+
+            $('.pre-numbering li').css("color", "#999");
+        }
+
+    
+
+</script>
+
+ 
+
+
+        <div id="digg" articleid="52577555">
+            <dl id="btnDigg" class="digg digg_disable" onclick="btndigga();">
+               
+                 <dt>頂</dt>
+                <dd>0</dd>
+            </dl>
+           
+              
+            <dl id="btnBury" class="digg digg_disable" onclick="btnburya();">
+              
+                  <dt>踩</dt>
+                <dd>0</dd>               
+            </dl>
+            
+        </div>
+     <div class="tracking-ad" data-mod="popu_222"><a href="javascript:void(0);">&nbsp;</a>   </div>
+    <div class="tracking-ad" data-mod="popu_223"> <a href="javascript:void(0);">&nbsp;</a></div>
+    <script type="text/javascript">
+                function btndigga() {
+                    $(".tracking-ad[data-mod='popu_222'] a").click();
+                }
+                function btnburya() {
+                    $(".tracking-ad[data-mod='popu_223'] a").click();
+                }
+            </script>
+
+   <ul class="article_next_prev">
+                <li class="prev_article"><span onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_shangyipian&#39;]);location.href=&#39;/dcrmg/article/details/52561656&#39;;">上一篇</span><a href="http://blog.csdn.net/dcrmg/article/details/52561656" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_shangyipian&#39;])">Sift中尺度空間、高斯金字塔、差分金字塔（DOG金字塔）、圖像金字塔</a></li>
+                <li class="next_article"><span onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_xiayipian&#39;]);location.href=&#39;/dcrmg/article/details/52578732&#39;;">下一篇</span><a href="http://blog.csdn.net/dcrmg/article/details/52578732" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_xiayipian&#39;])">Opencv Sift算子特徵提取與匹配</a></li>
+    </ul>
+
+    <div style="clear:both; height:10px;"></div>
+
+
+        <div class="similar_article" style="">
+                <h4>我的同類文章</h4>
+                <div class="similar_c" style="margin:20px 0px 0px 0px">
+                    <div class="similar_c_t">
+                                <label class="similar_cur">
+                                    <span style="cursor:pointer" onclick="GetCategoryArticles(&#39;6365099&#39;,&#39;dcrmg&#39;,&#39;foot&#39;,&#39;52577555&#39;);">圖像處理<em>（21）</em></span>
+                                </label>
+                    </div>
+                   
+                    <div class="similar_wrap tracking-ad" data-mod="popu_141" style="max-height:195px;">
+                        <a href="http://blog.csdn.net/" style="display:none">http://blog.csdn.net</a>
+                        <ul class="similar_list fl"><li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/53000150" id="foot_aritcle_53000150undefined39951778403361504" target="_blank" title="分類算法SVM（支持向量機)">分類算法SVM（支持向量機)</a><span>2016-11-01</span><label><i>閱讀</i><b>388</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52880508" id="foot_aritcle_52880508undefined8113934988301235" target="_blank" title="工業相機標定相關知識整理">工業相機標定相關知識整理</a><span>2016-10-21</span><label><i>閱讀</i><b>1571</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52851913" id="foot_aritcle_52851913undefined7766323524877403" target="_blank" title="工業相機基本參數以及選型參考（二）">工業相機基本參數以及選型參考（二）</a><span>2016-10-18</span><label><i>閱讀</i><b>1409</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52780799" id="foot_aritcle_52780799undefined4369724445233165" target="_blank" title="工業鏡頭基礎知識整理">工業鏡頭基礎知識整理</a><span>2016-10-10</span><label><i>閱讀</i><b>588</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52548790" id="foot_aritcle_52548790undefined6802325756245304" target="_blank" title="使用Opencv中matchTemplate模板匹配方法跟蹤移動目標">使用Opencv中matchTemplate模板匹配方法跟蹤移動目標</a><span>2016-09-15</span><label><i>閱讀</i><b>1467</b></label></li> </ul>
+
+                        <ul class="similar_list fr"><li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52950141" id="foot_aritcle_52950141undefined20711513275500115" target="_blank" title="透鏡畸變及校正模型">透鏡畸變及校正模型</a><span>2016-10-27</span><label><i>閱讀</i><b>942</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52864854" id="foot_aritcle_52864854undefined2084446412767662" target="_blank" title="衡量鏡頭解像能力性能的指標-MTF曲線">衡量鏡頭解像能力性能的指標-MTF曲線</a><span>2016-10-20</span><label><i>閱讀</i><b>319</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52810370" id="foot_aritcle_52810370undefined2667861344799394" target="_blank" title="工業相機基礎知識（一）">工業相機基礎知識（一）</a><span>2016-10-13</span><label><i>閱讀</i><b>657</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52561656" id="foot_aritcle_52561656undefined5275450092187977" target="_blank" title="Sift中尺度空間、高斯金字塔、差分金字塔（DOG金字塔）、圖像金字塔">Sift中尺度空間、高斯金字塔、差分金字塔（DOG金字塔）、圖像金字塔</a><span>2016-09-17</span><label><i>閱讀</i><b>1684</b></label></li> <li><em>•</em><a href="http://blog.csdn.net/dcrmg/article/details/52506538" id="foot_aritcle_52506538undefined9913280847622346" target="_blank" title="霍夫圓變換">霍夫圓變換</a><span>2016-09-11</span><label><i>閱讀</i><b>293</b></label></li> </ul>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6365099" class="MoreArticle">更多文章</a></div>
+                </div>
+            </div>    
+    <script type="text/javascript">
+        $(function () {
+            GetCategoryArticles('6365099', 'dcrmg','foot','52577555');
+        });
+    </script>
+      
+</div>
+
+     <div>
+             <ins data-revive-zoneid="206" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57"></ins> 
+    </div>
+
+<div id="suggest">
+        <div class="mod_more_detail clearfix" style="margin-top:80px;">
+                                <h2 class="mod_more_detail_title">
+                                    <div class="mod_more_detail_left">我的更多文章</div>
+                                </h2>
+
+                                <div class="mod_more_detail_content clearfix " id="mod_more_detail_content">     
+                                                     
+                                    <div class="mod_more_detail_content_left clearfix">                                       
+<li><a href="http://blog.csdn.net/dcrmg/article/details/52561656" target="_blank">Sift中尺度空間、高斯金字塔、差分金字塔（DOG金字塔）、圖像金字塔  (2016-09-17 09:46:33)</a></li>                               </div>
+
+                                    <div class="mod_more_detail_content_right clearfix">
+                                         </div>
+                                </div>
+           </div>                                            
+
+</div>
+         <script language="javascript" type="text/javascript">     
+             $(function(){
+                 $.get("/dcrmg/svc/GetSuggestContent/52577555",function(data){
+                     $("#suggest").html(data);
+                 });     
+             });             
+         </script>  
+
+
+<style>
+.blog-ass-articl dd {
+color: #369;
+width: 99%; /*修改行*/
+float: left;
+overflow: hidden;
+font: normal normal 12px/23px "SimSun";
+height: 23px;
+margin: 0;
+padding: 0 0 0 10px;
+margin-right: 30px;
+background: url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px;
+}
+</style>
+
+ <link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/replace.css">
+
+<div id="relate" data-mod="popu_218" class="tracking-ad" style="display: block;">
+        <div class="relate_t">
+            <h3><span>參考知識庫</span></h3>
+        </div>
+        <div class="relate_c"><dl class="relate_list"><dt><a target="_blank" href="http://lib.csdn.net/base/computervison"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/1490352585394_394.jpg" alt="img"></a></dt><dd><h4><a target="_blank" href="http://lib.csdn.net/base/computervison">計算機視覺知識庫</a></h4><p><label><span>643</span><em>關注</em><i>|</i><span>191</span><em>收錄</em></label></p></dd></dl><dl class="relate_list"><dt><a target="_blank" href="http://lib.csdn.net/base/robot"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/1490877118878_878.jpg" alt="img"></a></dt><dd><h4><a target="_blank" href="http://lib.csdn.net/base/robot">機器人知識庫</a></h4><p><label><span>103</span><em>關注</em><i>|</i><span>37</span><em>收錄</em></label></p></dd></dl><dl class="relate_list"><dt><a target="_blank" href="http://lib.csdn.net/base/opencv"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/1467269388326_326.jpg" alt="img"></a></dt><dd><h4><a target="_blank" href="http://lib.csdn.net/base/opencv">OpenCV知識庫</a></h4><p><label><span>4046</span><em>關注</em><i>|</i><span>1375</span><em>收錄</em></label></p></dd></dl><dl class="relate_list"><dt><a target="_blank" href="http://lib.csdn.net/base/softwaretest"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/1467193268346_346.jpg" alt="img"></a></dt><dd><h4><a target="_blank" href="http://lib.csdn.net/base/softwaretest">軟件測試知識庫</a></h4><p><label><span>4326</span><em>關注</em><i>|</i><span>318</span><em>收錄</em></label></p></dd></dl><dl class="relate_list"><dt><a target="_blank" href="http://lib.csdn.net/base/datastructure"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/1461035533512_512.jpg" alt="img"></a></dt><dd><h4><a target="_blank" href="http://lib.csdn.net/base/datastructure">算法與數據結構知識庫</a></h4><p><label><span>15291</span><em>關注</em><i>|</i><span>2320</span><em>收錄</em></label></p></dd></dl></div>
+</div>
+ 
+
+<dl class="blog-ass-articl" id="res-relatived"> 
+    <div class="embody embody_b" id="libkeyparent" style="display:none">
+            <span class="embody_t">更多資料請參考：</span>
+            <div class="embody_c" id="libkey"></div>
+    </div>
+
+
+     <dt><span>猜你在找</span></dt>    
+
+
+   
+
+
+    <div id="adCollege" style="width: 42%;float: left;"> 
+        <script src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/job_reco.js" type="text/javascript"></script> 
+        <script type="text/javascript">
+            csdn.position.showEdu({
+                sourceType: "blog",
+                searchType: "detail",
+                searchKey: "52577555",
+                username: "",
+                recordcount: "5",
+                containerId: "adCollege" //容器DIV的id。 
+            });
+            
+            setEduLoc();
+
+            function setEduLoc() {               
+                var edus = $("#adCollege div dd a");
+                if (edus.length == 0) {
+                    setTimeout(function () {
+                        setEduLoc();
+                    }, 500);
+                }
+                else {
+                    var eduLoc = "?ref=blog&loc=0";
+                    $.each(edus, function (index,item) {
+                        var href = $(this).attr("href") + eduLoc;
+                        $(this).attr("href", href);
+                    });
+                }
+            }
+
+        </script> 
+    <div class="tracking-ad" data-mod="popu_84"><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px; white-space: nowrap;"><a href="http://edu.csdn.net/course/detail/4581?ref=blog&amp;loc=0" title="使用決策樹算法對測試數據進行分類實戰" strategy="v4:content" target="_blank">使用決策樹算法對測試數據進行分類實戰</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px; white-space: nowrap;"><a href="http://edu.csdn.net/course/detail/3682?ref=blog&amp;loc=0" title="算法與遊戲實戰技術" strategy="v4:content" target="_blank">算法與遊戲實戰技術</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px; white-space: nowrap;"><a href="http://edu.csdn.net/course/detail/3359?ref=blog&amp;loc=0" title="數據結構與算法在實戰項目中的應用" strategy="v4:content" target="_blank">數據結構與算法在實戰項目中的應用</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px; white-space: nowrap;"><a href="http://edu.csdn.net/course/detail/667?ref=blog&amp;loc=0" title="移動APP測試基礎到進階" strategy="v4:content" target="_blank">移動APP測試基礎到進階</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px; white-space: nowrap;"><a href="http://edu.csdn.net/course/detail/3227?ref=blog&amp;loc=0" title="阿里雲機器學習算法應用實踐" strategy="v4:content" target="_blank">阿里雲機器學習算法應用實踐</a></dd></div></div>  
+
+    
+     <div id="res" data-mod="popu_36" class="tracking-ad" style="width: 42%; float: left; margin-right: 30px; display: block;"><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px;"><a href="http://blog.csdn.net/ARLoverKang/article/details/9219981" title="SIFT特徵提取分析特徵點篇" strategy="SearchAlgorithm">SIFT特徵提取分析特徵點篇</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px;"><a href="http://blog.csdn.net/Gone_HuiLin/article/details/53224061" title="特徵點匹配目標提取" strategy="SearchAlgorithm">特徵點匹配目標提取</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px;"><a href="http://blog.csdn.net/u014260892/article/details/44541623" title="opencv249圖像特徵點的提取和匹配" strategy="SearchAlgorithm">opencv249圖像特徵點的提取和匹配</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px;"><a href="http://blog.csdn.net/u010278305/article/details/42674929" title="Matlab圖像處理學習筆記六基於sift特徵點的人民幣識別" strategy="SearchAlgorithm">Matlab圖像處理學習筆記六基於sift特徵點的人民幣識別</a></dd><dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px;"><a href="http://blog.csdn.net/u010278305/article/details/42741315" title="Matlab圖像處理學習筆記八用廣義霍夫變換篩選sift特徵點" strategy="SearchAlgorithm">Matlab圖像處理學習筆記八用廣義霍夫變換篩選sift特徵點</a></dd></div>
+   
+</dl>
+
+
+<script type="text/javascript">
+    $(function () {
+        setTimeout(function () {
+            var searchtitletags = 'Sift算子特徵點提取、描述及匹配全流程解析' + ',' + $("#tags").html();
+            searchService({
+                index: 'blog',
+                query: searchtitletags,
+                from: 5,
+                size: 5,
+                appendTo: '#res',
+                url: 'recommend',
+                his: 2,
+                client: "blog_cf_enhance",
+                tmpl: '<dd style="background:url(http://static.blog.csdn.net/skin/default/images/blog-dot-red3.gif) no-repeat 0 10px;"><a href="#{ url }" title="#{ title }" strategy="#{ strategy }">#{ title }</a></dd>'
+            });
+        }, 500);
+    });    
+
+ </script>  
+
+
+    <div id="ad_cen">        
+                      <ins data-revive-zoneid="199" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57"></ins>
+    </div>  
+
+    <!-- 广告位开始 -->
+    <ins data-revive-zoneid="72" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57"></ins>
+    <!-- 广告位结束 -->
+
+<div class="comment_class">
+    <div id="comment_title" class="panel_head">
+        <span class="see_comment">查看評論</span><a name="comments"></a></div>
+    <div id="comment_list"><dl class="comment_item comment_topic" id="comment_item_6620954"><dt class="comment_head" floor="1">1樓 <span class="user"><a class="username" href="http://blog.csdn.net/qq_34279028" target="_blank">DDUPHP</a> <span class="ptime">2017-02-23 19:43發表</span>  <a href="http://blog.csdn.net/dcrmg/article/details/52577555#reply" class="cmt_btn reply" title="回覆">[回覆]</a> <span class="comment_manage" style="display:none;" commentid="6620954" username="qq_34279028"> <a href="http://blog.csdn.net/dcrmg/article/details/52577555#quote" class="cmt_btn quote" title="引用">[引用]</a> <a href="http://blog.csdn.net/dcrmg/article/details/52577555#report" class="cmt_btn report" title="舉報">[舉報]</a></span></span></dt><dd class="comment_userface"><a href="http://blog.csdn.net/qq_34279028" target="_blank"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/3_qq_34279028.jpg" width="40" height="40"></a></dd><dd class="comment_body">寫的很好贊一個。<br>有兩個問題，第一在第二步空間極值點檢測的時候中心點與26個點的比較是怎麼比較的，比較什麼？還有就是輔方向的設計最後有用在哪一步嗎？怎麼用的？</dd></dl><div class="clear"></div></div>
+    <div id="comment_bar" style="display: none;">
+    </div>
+    <div id="comment_form"><div class="guest_link">您還沒有登錄,請<a href="javascript:void(0);" onclick="javascript:loginbox();">[登錄]</a>或<a href="http://passport.csdn.net/account/register?from=http%3A%2F%2Fblog.csdn.net%2Fdcrmg%2Farticle%2Fdetails%2F52577555">[註冊]</a></div></div>
+    <div class="announce">
+        * 以上用戶言論只代表其個人觀點，不代表CSDN網站的觀點或立場<a name="reply"></a><a name="quote"></a></div>
+</div>
+
+<script type="text/javascript">
+    var fileName = '52577555';
+    var commentscount = 1;
+    var islock = false
+</script>
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/comment.js"></script>
+    <div id="ad_bot">
+    </div>
+<div id="report_dialog">
+</div>
+
+<div id="d-top" style="bottom:60px;">
+
+        <a id="quick-reply" class="btn btn-top q-reply" title="快速回覆" style="display:none;">
+            <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/blog-icon-reply.png" alt="快速回覆">
+        </a>    
+    <a id="d-top-a" class="btn btn-top backtop" style="display: none;" title="返回頂部" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_huidaodingbu&#39;])">         
+         <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/top.png" alt="TOP">
+    </a>
+</div>
+<script type="text/javascript">
+    $(function ()
+    {
+        $("#ad_frm_0").height("90px");
+        
+        setTimeout(function(){
+            $("#ad_frm_2").height("200px");
+        },1000);    
+    });
+  
+</script>
+<style type="text/css">
+    .tag_list
+    {
+        background: none repeat scroll 0 0 #FFFFFF;
+        border: 1px solid #D7CBC1;
+        color: #000000;
+        font-size: 12px;
+        line-height: 20px;
+        list-style: none outside none;
+        margin: 10px 2% 0 1%;
+        padding: 1px;
+    }
+    .tag_list h5
+    {
+        background: none repeat scroll 0 0 #E0DBD3;
+        color: #47381C;
+        font-size: 12px;
+        height: 24px;
+        line-height: 24px;
+        padding: 0 5px;
+        margin: 0;
+    }
+    .tag_list h5 a
+    {
+        color: #47381C;
+    }
+    .classify
+    {
+        margin: 10px 0;
+        padding: 4px 12px 8px;
+    }
+    .classify a
+    {
+        margin-right: 20px;
+        white-space: nowrap;
+    }
+</style>
+
+
+<div class="tag_list" style="">
+
+    <h5>
+        <a href="http://www.csdn.net/tag/" target="_blank">核心技術類目</a></h5>
+    <div class="classify">
+<a title="全部主題" href="http://www.csdn.net/tag" target="_blank" onclick="LogClickCount(this,336);">全部主題</a>
+<a title="Hadoop" href="http://g.csdn.net/5272865" target="_blank" onclick="LogClickCount(this,336);">Hadoop</a>
+<a title="AWS" href="http://g.csdn.net/5272866" target="_blank" onclick="LogClickCount(this,336);">AWS</a>
+<a title="移動遊戲" href="http://g.csdn.net/5272870" target="_blank" onclick="LogClickCount(this,336);">移動遊戲</a>
+<a title="Java" href="http://g.csdn.net/5272871" target="_blank" onclick="LogClickCount(this,336);">Java</a>
+<a title="Android" href="http://g.csdn.net/5272872" target="_blank" onclick="LogClickCount(this,336);">Android</a>
+<a title="iOS" href="http://g.csdn.net/5272873" target="_blank" onclick="LogClickCount(this,336);">iOS</a>
+<a title="Swift" href="http://g.csdn.net/5272868" target="_blank" onclick="LogClickCount(this,336);">Swift</a>
+<a title="智能硬件" href="http://g.csdn.net/5272869" target="_blank" onclick="LogClickCount(this,336);">智能硬件</a>
+<a title="Docker" href="http://g.csdn.net/5272867" target="_blank" onclick="LogClickCount(this,336);">Docker</a>
+<a title="OpenStack" href="http://g.csdn.net/5272925" target="_blank" onclick="LogClickCount(this,336);">OpenStack</a>
+<a title="VPN" href="http://www.csdn.net/tag/vpn" target="_blank" onclick="LogClickCount(this,336);">VPN</a>
+<a title="Spark" href="http://g.csdn.net/5272924" target="_blank" onclick="LogClickCount(this,336);">Spark</a>
+<a title="ERP" href="http://www.csdn.net/tag/erp" target="_blank" onclick="LogClickCount(this,336);">ERP</a>
+<a title="IE10" href="http://www.csdn.net/tag/ie10" target="_blank" onclick="LogClickCount(this,336);">IE10</a>
+<a title="Eclipse" href="http://www.csdn.net/tag/eclipse" target="_blank" onclick="LogClickCount(this,336);">Eclipse</a>
+<a title="CRM" href="http://www.csdn.net/tag/crm" target="_blank" onclick="LogClickCount(this,336);">CRM</a>
+<a title="JavaScript" href="http://www.csdn.net/tag/javascript" target="_blank" onclick="LogClickCount(this,336);">JavaScript</a>
+<a title="數據庫" href="http://www.csdn.net/tag/%E6%95%B0%E6%8D%AE%E5%BA%93" target="_blank" onclick="LogClickCount(this,336);">數據庫</a>
+<a title="Ubuntu" href="http://www.csdn.net/tag/ubuntu" target="_blank" onclick="LogClickCount(this,336);">Ubuntu</a>
+<a title="NFC" href="http://www.csdn.net/tag/nfc" target="_blank" onclick="LogClickCount(this,336);">NFC</a>
+<a title="WAP" href="http://www.csdn.net/tag/wap" target="_blank" onclick="LogClickCount(this,336);">WAP</a>
+<a title="jQuery" href="http://www.csdn.net/tag/jquery" target="_blank" onclick="LogClickCount(this,336);">jQuery</a>
+<a title="BI" href="http://www.csdn.net/tag/bi" target="_blank" onclick="LogClickCount(this,336);">BI</a>
+<a title="HTML5" href="http://www.csdn.net/tag/html5" target="_blank" onclick="LogClickCount(this,336);">HTML5</a>
+<a title="Spring" href="http://www.csdn.net/tag/spring" target="_blank" onclick="LogClickCount(this,336);">Spring</a>
+<a title="Apache" href="http://www.csdn.net/tag/apache" target="_blank" onclick="LogClickCount(this,336);">Apache</a>
+<a title=".NET" href="http://www.csdn.net/tag/.net" target="_blank" onclick="LogClickCount(this,336);">.NET</a>
+<a title="API" href="http://www.csdn.net/tag/api" target="_blank" onclick="LogClickCount(this,336);">API</a>
+<a title="HTML" href="http://www.csdn.net/tag/html" target="_blank" onclick="LogClickCount(this,336);">HTML</a>
+<a title="SDK" href="http://www.csdn.net/tag/sdk" target="_blank" onclick="LogClickCount(this,336);">SDK</a>
+<a title="IIS" href="http://www.csdn.net/tag/iis" target="_blank" onclick="LogClickCount(this,336);">IIS</a>
+<a title="Fedora" href="http://www.csdn.net/tag/fedora" target="_blank" onclick="LogClickCount(this,336);">Fedora</a>
+<a title="XML" href="http://www.csdn.net/tag/xml" target="_blank" onclick="LogClickCount(this,336);">XML</a>
+<a title="LBS" href="http://www.csdn.net/tag/lbs" target="_blank" onclick="LogClickCount(this,336);">LBS</a>
+<a title="Unity" href="http://www.csdn.net/tag/unity" target="_blank" onclick="LogClickCount(this,336);">Unity</a>
+<a title="Splashtop" href="http://www.csdn.net/tag/splashtop" target="_blank" onclick="LogClickCount(this,336);">Splashtop</a>
+<a title="UML" href="http://www.csdn.net/tag/uml" target="_blank" onclick="LogClickCount(this,336);">UML</a>
+<a title="components" href="http://www.csdn.net/tag/components" target="_blank" onclick="LogClickCount(this,336);">components</a>
+<a title="Windows Mobile" href="http://www.csdn.net/tag/windowsmobile" target="_blank" onclick="LogClickCount(this,336);">Windows Mobile</a>
+<a title="Rails" href="http://www.csdn.net/tag/rails" target="_blank" onclick="LogClickCount(this,336);">Rails</a>
+<a title="QEMU" href="http://www.csdn.net/tag/qemu" target="_blank" onclick="LogClickCount(this,336);">QEMU</a>
+<a title="KDE" href="http://www.csdn.net/tag/kde" target="_blank" onclick="LogClickCount(this,336);">KDE</a>
+<a title="Cassandra" href="http://www.csdn.net/tag/cassandra" target="_blank" onclick="LogClickCount(this,336);">Cassandra</a>
+<a title="CloudStack" href="http://www.csdn.net/tag/cloudstack" target="_blank" onclick="LogClickCount(this,336);">CloudStack</a>
+<a title="FTC" href="http://www.csdn.net/tag/ftc" target="_blank" onclick="LogClickCount(this,336);">FTC</a>
+<a title="coremail" href="http://www.csdn.net/tag/coremail" target="_blank" onclick="LogClickCount(this,336);">coremail</a>
+<a title="OPhone " href="http://www.csdn.net/tag/ophone" target="_blank" onclick="LogClickCount(this,336);">OPhone </a>
+<a title="CouchBase" href="http://www.csdn.net/tag/couchbase" target="_blank" onclick="LogClickCount(this,336);">CouchBase</a>
+<a title="雲計算" href="http://www.csdn.net/tag/%E4%BA%91%E8%AE%A1%E7%AE%97" target="_blank" onclick="LogClickCount(this,336);">雲計算</a>
+<a title="iOS6" href="http://www.csdn.net/tag/iOS6" target="_blank" onclick="LogClickCount(this,336);">iOS6</a>
+<a title="Rackspace " href="http://www.csdn.net/tag/rackspace" target="_blank" onclick="LogClickCount(this,336);">Rackspace </a>
+<a title="Web App" href="http://www.csdn.net/tag/webapp" target="_blank" onclick="LogClickCount(this,336);">Web App</a>
+<a title="SpringSide" href="http://www.csdn.net/tag/springside" target="_blank" onclick="LogClickCount(this,336);">SpringSide</a>
+<a title="Maemo" href="http://www.csdn.net/tag/maemo" target="_blank" onclick="LogClickCount(this,336);">Maemo</a>
+<a title="Compuware" href="http://www.csdn.net/tag/compuware" target="_blank" onclick="LogClickCount(this,336);">Compuware</a>
+<a title="大數據" href="http://www.csdn.net/tag/%E5%A4%A7%E6%95%B0%E6%8D%AE" target="_blank" onclick="LogClickCount(this,336);">大數據</a>
+<a title="aptech" href="http://www.csdn.net/tag/aptech" target="_blank" onclick="LogClickCount(this,336);">aptech</a>
+<a title="Perl" href="http://www.csdn.net/tag/perl" target="_blank" onclick="LogClickCount(this,336);">Perl</a>
+<a title="Tornado" href="http://www.csdn.net/tag/tornado" target="_blank" onclick="LogClickCount(this,336);">Tornado</a>
+<a title="Ruby" href="http://www.csdn.net/tag/ruby" target="_blank" onclick="LogClickCount(this,336);">Ruby</a>
+<a title="Hibernate" href="http://www.csdn.net/tag/hibernate" target="_blank" onclick="LogClickCount(this,336);">Hibernate</a>
+<a title="ThinkPHP" href="http://www.csdn.net/tag/thinkphp" target="_blank" onclick="LogClickCount(this,336);">ThinkPHP</a>
+<a title="HBase" href="http://www.csdn.net/tag/hbase" target="_blank" onclick="LogClickCount(this,336);">HBase</a>
+<a title="Pure" href="http://www.csdn.net/tag/pure" target="_blank" onclick="LogClickCount(this,336);">Pure</a>
+<a title="Solr" href="http://www.csdn.net/tag/solr" target="_blank" onclick="LogClickCount(this,336);">Solr</a>
+<a title="Angular" href="http://www.csdn.net/tag/angular" target="_blank" onclick="LogClickCount(this,336);">Angular</a>
+<a title="Cloud Foundry" href="http://www.csdn.net/tag/cloudfoundry" target="_blank" onclick="LogClickCount(this,336);">Cloud Foundry</a>
+<a title="Redis" href="http://www.csdn.net/tag/redis" target="_blank" onclick="LogClickCount(this,336);">Redis</a>
+<a title="Scala" href="http://www.csdn.net/tag/scala" target="_blank" onclick="LogClickCount(this,336);">Scala</a>
+<a title="Django" href="http://www.csdn.net/tag/django" target="_blank" onclick="LogClickCount(this,336);">Django</a>
+<a title="Bootstrap" href="http://www.csdn.net/tag/bootstrap" target="_blank" onclick="LogClickCount(this,336);">Bootstrap</a>
+    </div>
+
+</div>
+  <script language="javascript" type="text/javascript">     
+      $(function(){
+              setTimeout(function(){
+                  $.get("/dcrmg/svc/GetTagContent",function(data){
+                      $(".tag_list").html(data).show();
+                  });     
+              });
+          },500);                       
+ </script> 
+
+
+<div id="pop_win" style="display:none ;position: absolute; z-index: 10000; border: 1px solid rgb(220, 220, 220); top: 222.5px; left: 630px; opacity: 1; background: none 0px 0px repeat scroll rgb(255, 255, 255);">
+    
+</div>
+<div id="popup_mask"></div>
+<style>
+    #popup_mask
+    {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 9999;
+        left: 0px;
+        top: 0px;
+        opacity: 0.3;
+        filter: alpha(opacity=30);
+        display: none;
+    }
+
+</style>
+
+
+
+
+<script type="text/javascript">
+    $(function(){        
+        
+        setTimeout(function(){
+            $(".comment_body:contains('回覆')").each(function(index,item){
+                var u=$(this).text().split('：')[0].toString().replace("回覆","")
+                var thisComment=$(this);
+                if(u)
+                {
+                    $.getJSON("https://passport.csdn.net/get/nick?callback=?", {users: u}, function(a) {
+                        if(a!=null&&a.data!=null&&a.data.length>0)
+                        {
+                            nick=a.data[0].n; 
+                            if(u!=nick)
+                            {
+                                thisComment.text(thisComment.text().replace(u,nick));  
+                            }
+                        }       
+                    });  
+                }
+            });         
+
+        },200);  
+
+        setTimeout(function(){
+            $(".math").each(function(index,value){$(this).find("span").last().css("color","#fff"); })
+        },5000);
+
+        setTimeout(function(){
+            $(".math").each(function(index,value){$(this).find("span").last().css("color","#fff"); })
+        },10000);
+
+        setTimeout(function(){
+            $(".math").each(function(index,value){$(this).find("span").last().css("color","#fff"); })
+        },15000);
+        
+        setTimeout(function(){
+            $("a img[src='http://js.tongji.linezing.com/stats.gif']").parent().css({"position":"absolute","left":"50%"});
+        },300);
+    });
+
+    function loginbox(){
+        var $logpop=$("#pop_win");
+        $logpop.html('<iframe src="https://passport.csdn.net/account/loginbox?service=http://static.blog.csdn.net/callback.htm" frameborder="0" height="600" width="400" scrolling="no"></iframe>');
+
+        $('#popup_mask').css({
+            opacity: 0.5,
+            width: $( document ).width() + 'px',
+            height:  $( document ).height() + 'px'
+        });
+        $('#popup_mask').css("display","block");
+ 
+        $logpop.css( {
+            top: ($( window ).height() - $logpop.height())/ 2  + $( window 
+       ).scrollTop() + 'px',
+            left:($( window ).width() - $logpop.width())/ 2
+        } );
+ 
+        setTimeout( function () {
+            $logpop.show();
+            $logpop.css( {
+                opacity: 1
+            } );
+        }, 200 );
+ 
+        $('#popup_mask').unbind("click");
+        $('#popup_mask').bind("click", function(){
+            $('#popup_mask').hide();
+            var $clopop = $("#pop_win");
+            $("#common_ask_div_sc").css("display","none");
+            $clopop.css( {
+                opacity: 0
+            } );
+            setTimeout( function () {
+                $clopop.hide();
+            }, 350 );
+            return false;
+        });
+    }   
+
+</script>
+ <script language="javascript" type="text/javascript" src="http://ads.csdn.net/js/async_new.js"></script>      
+
+
+
+
+                        <div class="clear">
+                        </div>
+                    </div>                   
+                
+            </div>
+                   
+           <div id="side">
+               
+    <div class="side">
+<div id="panel_Profile" class="panel">
+<ul class="panel_head"><span>個人資料</span></ul>
+<ul class="panel_body profile">
+<div id="blog_userface">
+    <a href="http://my.csdn.net/dcrmg" target="_blank">
+    <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/1_dcrmg.jpg" title="訪問我的空間" style="max-width:90%">
+    </a>
+    <br>
+    <span><a href="http://my.csdn.net/dcrmg" class="user_name" target="_blank">-牧野-</a></span>
+</div>
+<div class="interact">
+
+    <a href="javascript:void(0);" class="attent" id="span_add_follow" title="[加關注]"></a>
+
+ <a href="javascript:void(0);" class="letter" title="[發私信]" onclick="window.open(&#39;http://msg.csdn.net/letters/model?receiver=dcrmg&#39;,&#39;_blank&#39;,&#39;height=350,width=700&#39;);_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_sixin&#39;])"></a>  
+</div>
+<div id="blog_medal">
+                <div id="bms_box">
+                                            <a target="_blank">
+                                                    <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/zhuanlandaren.png" onmouseover="m_over_m(this,2)" onmouseout="m_out_m()" alt="4">
+                                            </a>
+                                            <a target="_blank">
+                                                    <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/chizhiyiheng.png" onmouseover="m_over_m(this,4)" onmouseout="m_out_m()" alt="4">
+                                            </a>
+               </div>
+</div>
+<ul id="blog_rank">
+    <li>訪問：<span>164858次</span></li>
+    <li>積分：<span>3290</span> </li>    
+    <li>等級： <span style="position:relative;display:inline-block;z-index:1">
+            <img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/blog5.png" alt="" style="vertical-align: middle;" id="leveImg">
+            <div id="smallTittle" style=" position: absolute;  left: -24px;  top: 25px;  text-align: center;  width: 101px;  height: 32px;  background-color: #fff;  line-height: 32px;  border: 2px #DDDDDD solid;  box-shadow: 0px 2px 2px rgba (0,0,0,0.1);  display: none;   z-index: 999;">
+            <div style="left: 42%;  top: -8px;  position: absolute;  width: 0;  height: 0;  border-left: 10px solid transparent;  border-right: 10px solid transparent;  border-bottom: 8px solid #EAEAEA;"></div>
+            積分：3290 </div>
+        </span>  </li>
+    <li>排名：<span>第8877名</span></li>
+</ul>
+<ul id="blog_statistics">
+    <li>原創：<span>154篇</span></li>
+    <li>轉載：<span>0篇</span></li>
+    <li>譯文：<span>0篇</span></li>
+    <li>評論：<span>162條</span></li>
+</ul>
+</ul>
+</div>
+
+
+<div class="panel" id="panel_Search">
+    <ul class="panel_head"><span>文章搜索</span></ul>
+    <ul class="panel_body">
+        <form id="frmSearch" action="http://so.csdn.net/search" class="form_search" target="_blank">
+        <span><input id="inputSearch" type="text" class="blogsearch" title="请输入关键字"></span>
+        <input id="btnSubmit" type="button" value="搜索" title="search in blog">
+        <input type="hidden" name="q" id="inputQ">
+        <input type="hidden" name="t" value="blog">
+        <a id="btnSearchBlog" target="_blank"></a>
+        </form>
+    </ul>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $("#btnSubmit").click(function () {           
+            search();
+        });
+
+        $("#frmSearch").submit(function () {
+            search();
+            return false;
+        });
+
+        function search()
+        {
+            var url = "http://so.csdn.net/so/search/s.do?q=" + encodeURIComponent($("#inputSearch").val()) + "&u=" + username + "&t=blog";
+            window.location.href = url;
+        }   
+    });
+</script><div id="panel_Category" class="panel">
+    <ul class="panel_head"><span>博客專欄</span></ul>
+    <ul class="panel_body" id="sp_column">
+    <table cellpadding="0" cellspacing="0"><tbody><tr>
+    <td style="padding:10px 10px 0 0;">
+    <a href="http://blog.csdn.net/column/details/13862.html" target="_blank"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20161210182319878" style="width:75px;height:75px;"></a>
+    </td>
+    <td style="padding:10px 0; vertical-align:top;">
+    <a href="http://blog.csdn.net/column/details/13862.html" target="_blank">OpenCV下的機器學習</a>
+    <p>文章：9篇</p>
+    <span>閱讀：4591</span>
+    </td>
+    </tr></tbody></table>
+    <table cellpadding="0" cellspacing="0"><tbody><tr>
+    <td style="padding:10px 10px 0 0;">
+    <a href="http://blog.csdn.net/column/details/13716.html" target="_blank"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/20161127222853588" style="width:75px;height:75px;"></a>
+    </td>
+    <td style="padding:10px 0; vertical-align:top;">
+    <a href="http://blog.csdn.net/column/details/13716.html" target="_blank">OpenCV從入門到轉行</a>
+    <p>文章：51篇</p>
+    <span>閱讀：85046</span>
+    </td>
+    </tr></tbody></table>
+    </ul>
+</div><div id="panel_Category" class="panel">
+<ul class="panel_head"><span>文章分類</span></ul>
+<ul class="panel_body">    
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6293693" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">OpenCV</a><span>(51)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6322069" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">C++</a><span>(11)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6342703" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">小遊戲</a><span>(2)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6346757" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">條形碼/二維碼識別</a><span>(5)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6365099" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">圖像處理</a><span>(22)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6391383" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">C#</a><span>(3)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6392967" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">NPOI</a><span>(1)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6500546" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">機器學習</a><span>(9)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6505957" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">OpenGL</a><span>(29)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6640218" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">OpenMP</a><span>(4)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6667174" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">CUDA</a><span>(16)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6676389" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">TBB</a><span>(2)</span>
+                </li>
+                 <li>
+                    <a href="http://blog.csdn.net/dcrmg/article/category/6728030" onclick="_gaq.push([&#39;_trackEvent&#39;,&#39;function&#39;, &#39;onclick&#39;, &#39;blog_articles_wenzhangfenlei&#39;]); ">OpenCL</a><span>(3)</span>
+                </li>
+</ul>
+</div><div id="hotarticls" class="panel">
+<ul class="panel_head">
+    <span>       
+閱讀排行    </span>
+</ul>
+
+<ul class="panel_body itemlist">
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/51809614" title="OpenCV2.4.13+VS2012開發環境配置">OpenCV2.4.13+VS2012開發環境配置</a><span>(11498)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52416832" title="向量點乘（內積）和叉乘（外積、向量積）概念及幾何意義解讀">向量點乘（內積）和叉乘（外積、向量積）概念及幾何意義解讀</a><span>(7951)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52404580" title="Opencv中Mat矩陣相乘——點乘、dot、mul運算詳解">Opencv中Mat矩陣相乘——點乘、dot、mul運算詳解</a><span>(6967)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/51987413" title="C++ main函數中參數argc和argv含義及用法">C++ main函數中參數argc和argv含義及用法</a><span>(4202)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52260699" title="Opencv繪製最小外接矩形、最小外接圓">Opencv繪製最小外接矩形、最小外接圓</a><span>(4131)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52939318" title="張正友相機標定Opencv實現以及標定流程&amp;&amp;標定結果評價&amp;&amp;圖像矯正流程解析（附標定程序和棋盤圖）">張正友相機標定Opencv實現以及標定流程&amp;&amp;標定結果評價&amp;&amp;圖像矯正流程解析（附標定程序和棋盤圖）</a><span>(4014)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52629856" title="Opencv Sift和Surf特徵實現圖像無縫拼接生成全景圖像">Opencv Sift和Surf特徵實現圖像無縫拼接生成全景圖像</a><span>(3960)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52132313" title="Opencv+Zbar二維碼識別（標準條形碼/二維碼識別）">Opencv+Zbar二維碼識別（標準條形碼/二維碼識別）</a><span>(3946)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52195999" title="Opencv+Zbar二維碼識別（二維碼校正）">Opencv+Zbar二維碼識別（二維碼校正）</a><span>(3090)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52108258" title="二維碼解碼器Zbar+VS2012開發環境配置">二維碼解碼器Zbar+VS2012開發環境配置</a><span>(2694)</span>
+</li>
+</ul>
+</div>
+<div id="hotarticls2" class="panel">
+<ul class="panel_head"><span>評論排行</span></ul>
+<ul class="panel_body itemlist">
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52108258" title="二維碼解碼器Zbar+VS2012開發環境配置">二維碼解碼器Zbar+VS2012開發環境配置</a><span>(23)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/51809614" title="OpenCV2.4.13+VS2012開發環境配置">OpenCV2.4.13+VS2012開發環境配置</a><span>(14)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52629856" title="Opencv Sift和Surf特徵實現圖像無縫拼接生成全景圖像">Opencv Sift和Surf特徵實現圖像無縫拼接生成全景圖像</a><span>(13)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52939318" title="張正友相機標定Opencv實現以及標定流程&amp;&amp;標定結果評價&amp;&amp;圖像矯正流程解析（附標定程序和棋盤圖）">張正友相機標定Opencv實現以及標定流程&amp;&amp;標定結果評價&amp;&amp;圖像矯正流程解析（附標定程序和棋盤圖）</a><span>(11)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52194896" title="Opencv+Zbar二維碼識別（一維碼校正）">Opencv+Zbar二維碼識別（一維碼校正）</a><span>(7)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52475777" title="圖像校正—透視變換">圖像校正—透視變換</a><span>(7)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52195999" title="Opencv+Zbar二維碼識別（二維碼校正）">Opencv+Zbar二維碼識別（二維碼校正）</a><span>(7)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/51913160" title="MFC顯示Mat圖片">MFC顯示Mat圖片</a><span>(6)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52548790" title="使用Opencv中matchTemplate模板匹配方法跟蹤移動目標">使用Opencv中matchTemplate模板匹配方法跟蹤移動目標</a><span>(6)</span>
+</li>
+<li>
+<a href="http://blog.csdn.net/dcrmg/article/details/52967188" title="OpenCV調試利器——Image Watch插件的安裝和使用">OpenCV調試利器——Image Watch插件的安裝和使用</a><span>(5)</span>
+</li>
+</ul>
+</div>
+<div id="homepageArticles" class="panel tracking-ad" data-mod="popu_4">
+<ul class="panel_head"><span>推薦文章</span></ul>
+<ul class="panel_body" id="ad_commend">
+<ul>
+<li><a href="http://blog.csdn.net/jiangwei0910410003/article/details/61618945" target="_blank">* Android安全防護之旅---帶你把Apk混淆成中文語言代碼</a></li>
+<li><a href="http://blog.csdn.net/tensorflowshizhan/article/details/69230070" target="_blank">* TensorFlow文本摘要生成 - 基於注意力的序列到序列模型</a></li>
+<li><a href="http://blog.csdn.net/eclipsexys/article/details/69055862" target="_blank">* 創建後台任務的兩種代碼模式</a></li>
+<li><a href="http://blog.csdn.net/zuoxiaolong8810/article/details/69370873" target="_blank">* 一個屌絲程序猿的人生（六十）</a></li>
+<li><a href="http://blog.csdn.net/hanhailong18/article/details/69102820" target="_blank">* WKWebView與js交互之完美解決方案</a></li>
+<li><a href="http://blog.csdn.net/yzzst/article/details/69218919" target="_blank">* 年輕人，「磚磚瓦瓦」不應該成為你的夢想！</a></li>
+
+</ul></ul>
+</div>
+
+
+<div id="newcomments" class="panel">
+<ul class="panel_head"><span>最新評論</span></ul>
+<ul class="panel_body itemlist">
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/52344902#comments">Canny邊緣檢測及C++實現</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/alw_123" class="user_name">alw_123</a>:
+非極大值抑制時數組訪問越界如if(value11&lt;=(value01+(value00-value0...
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/52629856#comments">Opencv Sift和Surf特徵實現圖像無縫拼接生成全景圖像</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/qq_36688825" class="user_name">qq_36688825</a>:
+@sinat_33676132:您好，我運行這個代碼的時候彈出100多條錯誤…用的是opencv3....
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/52095508#comments">Opencv：10個步驟檢測出圖片中條形碼</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/amusi1994" class="user_name">阿木寺</a>:
+這樣背景簡單的可以通過此方法，檢測大的區域即可，不僅侷限於條形碼，那如果背景稍微一複雜，就不可用了
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/52548790#comments">使用Opencv中matchTemplate模板匹配方法跟蹤移動目標</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/nuniuqi6442" class="user_name">nuniuqi6442</a>:
+怎麼改成攝像頭的
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/51809614#comments">OpenCV2.4.13+VS2012開發環境配置</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/yu767362089" class="user_name">凸畢拿波丸</a>:
+感謝樓主，用你的配置方法一次就成功了！
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/51809614#comments">OpenCV2.4.13+VS2012開發環境配置</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/yu767362089" class="user_name">凸畢拿波丸</a>:
+感謝樓主，用你的配置方法一次就成功了！
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/53223680#comments">OpenGL（十六） 鼠標、鍵盤交互響應事件</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/qq_37933204" class="user_name">qq_37933204</a>:
+這個應該是投影變化投影變換吧
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/52939318#comments">張正友相機標定Opencv實現以及標定流程&amp;&amp;標定結果評價&amp;&amp;圖像矯正流程解析（附標定程序和棋盤圖）</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/qq_37999284" class="user_name">qq_37999284</a>:
+謝謝分享。
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/52404580#comments">Opencv中Mat矩陣相乘——點乘、dot、mul運算詳解</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/Yong_Qi2015" class="user_name">齊小凡</a>:
+整理得好棒
+    </p>
+    </li>
+    <li>
+   
+         <a href="http://blog.csdn.net/dcrmg/article/details/52027847#comments">Opencv函數setMouseCallback鼠標事件響應</a>
+    <p style="margin:0px;"><a href="http://blog.csdn.net/Da_Yuan8421" class="user_name">大元圓又圓</a>:
+博主你好，我有個問題想請教一下你。在main函數中setMouseCallback("image",...
+    </p>
+    </li>
+</ul>
+</div>
+    </div>
+    <div class="clear">
+    </div>
+
+
+                   <!-- 广告位开始 --> 
+                    <ins data-revive-zoneid="190" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57"></ins> 
+                    <!-- 广告位结束 -->
+
+           </div>   
+
+            <div class="clear">
+            </div>
+        </div>
+
+        
+
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/cnick.js"></script>
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/newblog.min.js"></script>
+
+
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/showblogmedal.ashx"></script>
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/JavaScript1.js"></script><link rel="stylesheet" type="text/css" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/pub_footer_2014.css"><div class="pub_fo"><div id="pub_footerall" class="pub_footer_new"><dl><dt></dt> <dd class="foot_sub_menu"><a href="http://www.csdn.net/company/about.html" target="_blank">公司簡介</a><span>|</span><a href="http://www.csdn.net/company/recruit.html" target="_blank">招賢納士</a><span>|</span><a href="http://www.csdn.net/company/marketing.html" target="_blank">廣告服務</a><span>|</span><a href="http://www.csdn.net/company/contact.html" target="_blank">聯繫方式</a><span>|</span><a href="http://www.csdn.net/company/statement.html" target="_blank">版權聲明</a><span>|</span><a href="http://www.csdn.net/company/layer.html" target="_blank">法律顧問</a><span>|</span><a href="mailto:webmaster@csdn.net">問題報告</a><span>|</span><a target="_blank" href="http://www.csdn.net/friendlink.html">合作夥伴</a><span>|</span><a href="http://bbs.csdn.net/forums/Service" target="_blank">論壇反饋</a></dd><dd class="foot_contact"><a href="javascript:void(0);" target="_blank" class="qq">網站客服</a><a href="http://wpa.qq.com/msgrd?v=3&amp;uin=2251809102&amp;site=qq&amp;menu=yes" target="_blank" class="qq">雜誌客服</a><a href="http://e.weibo.com/csdnsupport/profile" target="_blank" class="weibo">微博客服</a><a href="mailto:webmaster@csdn.net" class="email" title="聯繫郵箱">webmaster@csdn.net</a><span class="phone" title="服務熱線">400-600-2320</span><span class="interval">|</span><span>北京創新樂知信息技術有限公司 版權所有</span><span class="interval">|</span><span>江蘇知之為計算機有限公司</span><span class="interval">|</span><span>江蘇樂知網絡技術有限公司</span></dd><dd class="foot_copyright"><span>京&nbsp;ICP&nbsp;證&nbsp;09002463&nbsp;號</span><span class="interval">|</span><span>Copyright © 1999-2016, CSDN.NET, All Rights Reserved&nbsp;</span><a href="http://www.hd315.gov.cn/beian/view.asp?bianhao=010202001032100010" target="_blank"><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/gongshang_logos.gif" alt="GongshangLogo" title=""></a></dd></dl></div></div><div id="note1" class="csdn_note" style="display:none; position:absolute; z-index:9999; width:440px">  <span class="notice_top_arrow"><span class="inner"></span></span>  <div class="box"></div></div><div class="csdn_notice_tip" style="display:none; position:absolute; z-index:9990; width:170px">  <iframe src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/saved_resource(2).html" frameborder="0" scrolling="no" style="z-index:-1;position:absolute;top:0;left:0;width:100%;height:100%;background:transparent"></iframe>  <div class="tip_text">您有<strong>0</strong>條新通知</div>  <a href="javascript:void 0" class="close2"></a></div><script id="noticeScript" type="text/javascript" btnid="header_notice_num" wrapid="note1" count="5" subcount="5" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/notify.js"></script>
+
+    <script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/login.js"></script>
+<script type="text/javascript">document.write("<img src=http://counter.csdn.net/pv.aspx?id=24 border=0 width=0 height=0>");</script><img src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/pv.aspx" border="0" width="0" height="0">
+<script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/counter.js"></script><script type="text/javascript" charset="UTF-8" src="http://message.csdn.net/msg.popup.js"></script>
+<script type="text/javascript" src="http://ad.csdn.net/scripts/ad-blog.js"></script>
+<script type="text/javascript">
+    $(function () {
+        function __get_code_toolbar(snippet_id) {
+            return $("<span class='tracking-ad' data-mod='popu_167'><a href='https://code.csdn.net/snippets/"
+                    + snippet_id
+                    + "' target='_blank' title='在CODE上查看代碼片'  style='text-indent:0;'><img src='https://code.csdn.net/assets/CODE_ico.png' width=12 height=12 alt='在CODE上查看代碼片' style='position:relative;top:1px;left:2px;'/></a></span>"
+                    + "<span class='tracking-ad' data-mod='popu_170'><a href='https://code.csdn.net/snippets/"
+                    + snippet_id
+                    + "/fork' target='_blank' title='派生到我的代碼片' style='text-indent:0;'><img src='https://code.csdn.net/assets/ico_fork.svg' width=12 height=12 alt='派生到我的代碼片' style='position:relative;top:2px;left:2px;'/></a></span>");
+        }
+        
+        $("[code_snippet_id]").each(function () {
+            __s_id = $(this).attr("code_snippet_id");
+            if (__s_id != null && __s_id != "" && __s_id != 0 && parseInt(__s_id) > 70020) {
+                __code_tool = __get_code_toolbar(__s_id);
+                $(this).prev().find(".tools").append(__code_tool);
+            }
+        });
+
+        $(".bar").show();
+    });
+</script>
+
+
+
+
+
+    </div><input type="hidden" id="aa_g_data_ids">
+      <!--new top-->
+    
+    <script id="csdn-toolbar-id" btnid="header_notice_num" wrapid="note1" count="5" subcount="5" type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/toolbar.js"></script>
+     <!--new top-->
+   
+    <link href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/ask_float_block.css" type="text/css" rel="stylesheet">
+    <script language="JavaScript" type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/wmd.js"></script>
+    <script language="JavaScript" type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/showdown.js"></script>
+    <script language="JavaScript" type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/prettify(1).js"></script>
+    <script language="JavaScript" type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/ask_float_block.js"></script>
+   
+
+   
+
+  <div id="a52b5334d" style="width: 1px; height: 1px; display: none;">
+                    <script id="adJs52b5334" src="http://ads.csdn.net/js/opt/52b5334.js?t=0.40199630979779255"></script>
+                    <script>document.getElementById("adJs52b5334").src = "http://ads.csdn.net/js/opt/52b5334.js?t=" + Math.random();</script>
+   </div>
+
+    <link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/blog_code.css">
+    <script type="text/javascript" src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/saveToCode.js"></script>
+      <script type="text/javascript" src="http://csdnimg.cn/rabbit/tracking-ad/main.js?75eacd8"></script>
+
+     <link rel="stylesheet" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/fa.css">
+
+    <div class="pop_CA_cover" style="display:none"></div>
+    <div class="pop pop_CA" style="display:none">
+          <div class="CA_header">
+            收藏助手
+            <span class="cancel_icon" id="fapancle" onclick="$(&#39;.pop_CA&#39;).hide();$(&#39;.pop_CA_cover&#39;).hide();"></span>
+          </div>
+          <iframe src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/saved_resource(3).html" id="fa" frameborder="0" width="100%" height="360" scrolling="no">
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;   
+ </iframe></div><div id="tag-suggest-pop">
+  <div class="relative">
+    <div class="close"></div>
+    <div class="content"></div>
+  </div>
+</div><link rel="stylesheet" type="text/css" media="screen" href="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/ask_float_fonts_css-6b30a53970eb5c3a2a045e3df585b475.css"><div data-mod="popu_64" class="csdn-tracking-statistics" chg-blk="0"><a id="com-quick-reply" title="快速回覆" style="top:300px"></a><a id="com-quick-collect" title="我要收藏" style="top:338px"></a><a id="com-d-top-a" style="top:376px" title="返回頂部" onclick=""></a> </div><div class="pop_edit ask_second comm_ask_second"><h3>提問</h3><span class="ask_float_span">您的問題將會被發布在「<a class="ask_float_channel" href="http://ask.csdn.net/" target="_blank" style="cursor:pointer">技術問答</a>」頻道</span><a href="http://blog.csdn.net/dcrmg/article/details/52577555#" nodetype="close" class="close">×</a><div class="context"><div class="err_div"><span class="err_ico"></span><span class="err_txt">該問題已存在，請勿重複提問</span></div><div class="input_div"><input id="askInputSecond" type="text" style="font-size:14px;" placeholder="问题标题"></div><div class="cm_box"><div class="cm_dialog"></div> <div class="pop_cm cm_add_link"><input type="text" placeholder="链接内容" id="af_cm_link_txt"><input type="text" placeholder="链接地址" id="af_cm_link_url"><input type="text" placeholder="链接提示" id="af_cm_link_tit"><div class="text-right"><span class="btn btn-default btn-sm" id="add_link_btn">插入鏈接</span> </div> </div><div class="pop_cm cm_add_img"><div class="nav-tabs"><a class="img_tab active" href="http://blog.csdn.net/dcrmg/article/details/52577555#tab_upload">本地上傳</a><a class="img_tab" href="http://blog.csdn.net/dcrmg/article/details/52577555#tab_weburl">網絡圖片</a></div><div class="tab_panel active" id="tab_upload"><div class="set_img"><iframe src="./Sift算子特徵點提取、描述及匹配全流程解析 - 牧野的博客 - 博客頻道 - CSDN.NET_files/upload.html"></iframe></div></div><div class="tab_panel" id="tab_weburl"><input type="text" placeholder="图片地址" id="af_cm_img_url"><input type="text" placeholder="图片说明" id="af_cm_img_alt"><div class="text-right"><span class="btn btn-default btn-sm" id="add_img_btn">插入圖片</span> </div></div> </div></div> <textarea id="editor_all" rows="8" style="display: none;"></textarea><div class="editor-toolbar"><i class="separator">|</i><a class="icon-headline" title="標題一（Ctrl+Alt+1）"></a><a class="icon-heading" title="標題二（Ctrl+Alt+2）"></a><a class="icon-bold" title="粗體（Ctrl+B）"></a><a class="icon-italic" title="斜體（Ctrl+I）"></a><i class="separator">|</i><a class="icon-quote-left" title="引用（Ctrl+』）"></a><a class="icon-code" title="插入代碼片（Ctrl+,）"></a><a class="icon-list-ul" title="無序列表（Ctrl+L）"></a><a class="icon-list-ol" title="有序列表（Ctrl+Alt+L）"></a><i class="separator">|</i><a class="icon-link" title="添加鏈接（Ctrl+K）"></a><a class="icon-picture" title="添加圖片（Ctrl+Alt+I）"></a><i class="separator">|</i><a class="icon-reply" title="撤退（Ctrl+Z）"></a><a class="icon-share-alt" title="前進（Ctrl+Shift+Z）"></a><i class="separator">|</i><a class="icon-info" href="http://ask.csdn.net/pages/markdown" target="_blank" title="markdown語法參考"></a><a class="icon-preview" title="預覽"></a><i class="separator">|</i></div><div class="CodeMirror cm-s-paper CodeMirror-focused"><div style="overflow: hidden; position: relative; width: 3px; height: 0px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" style="position: absolute; padding: 0px; width: 1000px; height: 1em; outline: none; font-size: 4px;" tabindex="0"></textarea></div><div class="CodeMirror-hscrollbar"><div style="height: 1px;"></div></div><div class="CodeMirror-vscrollbar"><div style="width: 1px;"></div></div><div class="CodeMirror-scrollbar-filler"></div><div class="CodeMirror-gutter-filler"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="min-width: 33px;"><div style="position: relative;"><div class="CodeMirror-lines"><div style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre>&nbsp;<span style="display: inline-block; width: 1px; margin-right: -1px;">&nbsp;</span></pre></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code"></div><div class="CodeMirror-cursor">&nbsp;</div><div class="CodeMirror-cursor CodeMirror-secondarycursor">&nbsp;</div></div></div></div></div><div style="position: absolute; height: 30px; width: 1px;"></div><div class="CodeMirror-gutters" style="display: none;"></div></div></div><div class="editor-statusbar"><span class="lines">0</span><span class="words">0</span><span class="cursor">0:0</span></div><div class="div_tags clearfix"><div id="divSearchTags" class="tags_con"><input type="text"></div><input type="hidden" name="txtSearchTags"></div><div id="ask2_tagRecomm_div" class="drt_tagRecomm tracking-ad" data-mod="popu_73"><span class="drt_tit">推薦標籤：</span></div></div><div class="success"><div class="left_area"><input id="chk_cb" type="checkbox" value="on"><span class="wyxs">我要懸賞</span><input id="cb_num" class="cb_num" readonly="true"><span class="phib_rii"><span> 幣</span></span></div><a href="http://blog.csdn.net/dcrmg/article/details/52577555#" nodetype="cancel" class="cancel">取消</a><a href="http://blog.csdn.net/dcrmg/article/details/52577555#" nodetype="ok" class="ok">發佈</a></div></div><div id="common_ask_div_sc" class="searchContainer"><div class="sTitle">可能存在類似的問題：</div><div class="sFooter"><a class="sFirstNewAsk">我想提一個新問題</a></div></div><div id="mask_code"></div><div class="gist_edit"><div class="save_snippets clearfix"><div class="tit"><h3>保存代碼片</h3><span>整理和分享保存的代碼片，請訪問<a href="https://code.csdn.net/snippets_manage" target="_blank">代碼筆記</a></span></div><div class="con_form"><ul class="gist_edit_list clearfix"><li><span class="red">*</span><span class="txt">標題</span><input id="form_title" class="form-input" placeholder="Sift算子特征点提取、描述及匹配全流程解析" type="text"></li><li><span class="red">*</span><span class="txt">描述</span><textarea id="form-textarea" class="form-textarea" placeholder="Sift算子特征点提取、描述及匹配全流程解析： http://blog.csdn.net/dcrmg/article/details/52577555"></textarea></li><li><span class="red">&nbsp;</span><span class="txt">標籤</span><div id="divSearchTags"><span class="label blog_tag"><span>Sift算子</span><a title="Removing tag" href="javascript:;">x</a></span><span class="label blog_tag"><span>Sift特徵提取</span><a title="Removing tag" href="javascript:;">x</a></span><span class="label blog_tag"><span>特徵匹配</span><a title="Removing tag" href="javascript:;">x</a></span><input id="insertTag" class="insertTag" placeholder="请输入标签，按Enter生成(最多5项)" type="text" value="" name="insertTag" maxlength="21" style="color: rgb(51, 51, 51);"><input id="OrganTag" class="OrganTag" type="hidden" name="OrganTag" value="Sift算子,Sift特征提取,特征匹配,"><input id="OldOrganTag" class="OldOrganTag" type="hidden" name="OldOrganTag" value=""><input type="hidden" name="txtSearchTags"></div></li></ul></div><div class="bottom-bar"><a href="javascript:;" class="btn-submit btn-cancel">取消</a><span class="tracking-ad" data-mod="popu_250"><a class="btn-submit btn-confirm" href="javascript:;">確定</a></span></div></div></div></body></html>
