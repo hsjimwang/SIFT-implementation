@@ -444,35 +444,8 @@ int main( int argc, char** argv )
         circle(colorfulImage2, e.pt, 3, Scalar(0,255,255));
     }
 
-    // for(const auto& i:ex1){
-    //     for(const auto& e:i.NeighborCells){
-    //         cout << "[";
-    //         for(const auto& f:e)
-    //             cout << f << ",";
-    //         cout << "], ";
-    //     }
-    //     cout << endl << endl;
-    // }
-
     for(const auto& e:ex1){
         circle(colorfulImage, e.pt, 3, Scalar(0,255,255));
-        // cout << e.pt.x << "  " << e.pt.y << "  " << e.octave << endl;
-        
-        // if(tan(e.angle/180.0*PI) < pow(10,-8))
-        //     line(colorfulImage, e.pt, Point(e.pt.x + e.magnitude, e.pt.y), Scalar(0,255,255), 1);
-        // if(abs(e.magnitude) < 100 && abs(e.magnitude * tan(e.angle/180.0*PI)) < 100)
-        //     line(colorfulImage, e.pt, Point(e.pt.x + e.magnitude, e.pt.y + e.magnitude * tan(e.angle/180.0*PI)), Scalar(0,255,255), 1);
-
-        // else if(abs(e.magnitude) >= 100 && abs(e.magnitude * tan(e.angle/180.0*PI)) < 100)
-        //     line(colorfulImage, e.pt, Point(e.pt.x + 100, e.pt.y + 100 * tan(e.angle/180.0*PI)), Scalar(0,255,255), 1);
-        // else if(abs(e.magnitude) < 100 && abs(e.magnitude * tan(e.angle/180.0*PI)) >= 100)
-        //     line(colorfulImage, e.pt, Point(e.pt.x + 100 / double(tan(e.angle/180.0*PI)), e.pt.y + 100), Scalar(0,255,255), 1);
-        // else{
-        //     if(abs(e.magnitude) > abs(e.magnitude * tan(e.angle/180.0*PI)))
-        //         line(colorfulImage, e.pt, Point(e.pt.x + 100, e.pt.y + 100 * tan(e.angle/180.0*PI)), Scalar(0,255,255), 1);
-        //     else
-        //         line(colorfulImage, e.pt, Point(e.pt.x + 100 / double(tan(e.angle/180.0*PI)), e.pt.y + 100), Scalar(0,255,255), 1);
-        // }
     }
 
     imshow("show", colorfulImage);
@@ -502,22 +475,5 @@ int main( int argc, char** argv )
     }
     imshow("ShowMatches", matches);
     waitKey(0);
-
-    // Rect rect(50,60,100,100);
-    // Mat dst_cut = dst(rect);
-    // imshow("cut",dst_cut);
-    // waitKey(0);
-
-    // int nOctaveLayers = 2;
-    // vector<double> sig(nOctaveLayers + 3);
-    // sig[0] = sigma;
-    // double k = pow( 2., 1. / nOctaveLayers );
-    // for( int i = 1; i < nOctaveLayers + 3; i++ )
-    // {
-    //     double sig_prev = pow(k, (double)(i-1))*sigma;
-    //     double sig_total = sig_prev*k;
-    //     sig[i] = std::sqrt(sig_total*sig_total - sig_prev*sig_prev);
-    // }
-
     return 0;
 }
